@@ -2,6 +2,23 @@
 import { currentUser, auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 
+export async function createUser(data: any) {
+  try {
+    const newUser = await prisma.user.create({
+      data: {
+        clerkId: data.id,
+        email: data.email,
+        username: data.username ?? data.email.split("@")[0],
+        name: data.name,
+        role: data.role,
+      },
+    });
+
+    return { success: true, data: newUser };
+  } catch (error) {
+    console.error("Error creating user", error);
+  }
+}
 export async function syncUser() {
   try {
     const user = await currentUser();
