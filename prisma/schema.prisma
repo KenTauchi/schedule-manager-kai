@@ -30,6 +30,7 @@ model User {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     location String?
+    onBoarded Boolean? @default(false)
 }
 
 
