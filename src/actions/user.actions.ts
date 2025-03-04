@@ -1,6 +1,28 @@
 "use server";
-import { currentUser, auth } from "@clerk/nextjs/server";
+import { currentUser, auth, clerkClient } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
+import { date } from "zod";
+
+export async function completeOnBoarding() {
+  const { userId } = await auth();
+  if (!userId) return;
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: {
+        clerkId: userId,
+      },
+      data: {
+        onBoarded: true,
+      },
+    });
+
+    return { success: true, data: updatedUser };
+  } catch (error) {
+    console.error("Error creating user", error);
+  }
+}
 
 export async function createUser(data: any) {
   try {
@@ -15,6 +37,28 @@ export async function createUser(data: any) {
     });
 
     return { success: true, data: newUser };
+  } catch (error) {
+    console.error("Error creating user", error);
+  }
+}
+
+type UpdateUserRoleProps = {
+  id: string;
+  role: "STUDENT" | "TEACHER";
+};
+
+export async function updateUserRole(data: UpdateUserRoleProps) {
+  try {
+    const updatedUser = await prisma.user.update({
+      where: {
+        clerkId: data.id,
+      },
+      data: {
+        role: data.role,
+      },
+    });
+
+    return { success: true, data: updatedUser };
   } catch (error) {
     console.error("Error creating user", error);
   }
