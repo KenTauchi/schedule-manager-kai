@@ -59,9 +59,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   //   Handling when on the onboard page
   if (isOnboardingRoute(req)) {
     if (userRole !== "PENDING") {
-      return NextResponse.redirect(
-        new URL(userRole === "STUDENT" ? "/student-dashboard" : "/teacher-dashboard", req.url)
-      );
+      return redirectToDashboard();
     }
 
     if (userId && userRole === "PENDING") {
