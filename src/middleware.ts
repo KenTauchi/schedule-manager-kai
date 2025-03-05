@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 const isOnboardingRoute = createRouteMatcher(["/onboarding"]);
 const isPublicRoute = createRouteMatcher(["/"]);
+const isStudentRoute = createRouteMatcher(["/student-dashboard"]);
+const isTeacherRoute = createRouteMatcher(["/teacher-dashboard"]);
 
 // Add this helper function
 function isApiRoute(req: NextRequest): boolean {
@@ -23,13 +25,24 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   const userRole = sessionClaims?.metadata?.role;
 
   // Allow API routes to bypass checks
-  if (isApiRoute(req) || isDashboardRoute(req)) {
+  if (isApiRoute(req)) {
     return NextResponse.next();
   }
 
   // If not logged in and trying to access private route, redirect to home
   if (!userId && !isPublicRoute(req)) {
     return NextResponse.redirect("/");
+  }
+
+  if (isDashboardRoute(req)) {
+    if (userRole === "STUDENT" && isTeacherRoute(req)) {
+      return NextResponse.redirect(new URL("/student-dashboard", req.url));
+    }
+    if (userRole === "TEACHER" && isStudentRoute(req)) {
+      return NextResponse.redirect(new URL("/teacher-dashboard", req.url));
+    }
+
+    return NextResponse.next();
   }
 
   if (userRole !== "PENDING" && isOnboardingRoute(req)) {
