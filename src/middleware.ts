@@ -19,10 +19,11 @@ function isDashboardRoute(req: NextRequest): boolean {
 // export default clerkMiddleware();
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   const { userId, sessionClaims } = await auth();
-  console.log("session claims", sessionClaims);
+
+  const userRole = sessionClaims?.metadata?.role;
 
   // Allow API routes to bypass checks
-  if (isApiRoute(req)) {
+  if (isApiRoute(req) || isDashboardRoute(req)) {
     return NextResponse.next();
   }
 
@@ -31,12 +32,21 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     return NextResponse.redirect("/");
   }
 
+  if (userRole !== "PENDING" && isOnboardingRoute(req)) {
+    const userRole = sessionClaims?.metadata?.role;
+
+    if (userRole === "STUDENT") {
+      return NextResponse.redirect(new URL("/student-dashboard", req.url));
+    } else if (userRole === "TEACHER") {
+      return NextResponse.redirect(new URL("/teacher-dashboard", req.url));
+    }
+  }
+
   // If logged in but not onboarded, and not already on onboarding page
-  if (userId && !sessionClaims?.metadata?.onBoardingComplete && !isOnboardingRoute(req)) {
+  if (userId && userRole === "PENDING" && !isOnboardingRoute(req)) {
     return NextResponse.redirect(new URL("/onboarding", req.url));
   }
 
-  // Otherwise, allow access
   return NextResponse.next();
 });
 

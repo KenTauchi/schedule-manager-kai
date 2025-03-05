@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { date } from "zod";
 
-export async function completeOnBoardingForClerk() {
+export async function completeOnBoardingForClerk(role: "STUDENT" | "TEACHER") {
   const { userId } = await auth();
   if (!userId) return;
 
@@ -13,31 +13,11 @@ export async function completeOnBoardingForClerk() {
 
     await client.users.updateUserMetadata(userId, {
       unsafeMetadata: {
-        onBoardingComplete: true,
+        role,
       },
     });
 
     return { success: true };
-  } catch (error) {
-    console.error("Error creating user", error);
-  }
-}
-
-export async function completeOnBoarding() {
-  const { userId } = await auth();
-  if (!userId) return;
-
-  try {
-    const updatedUser = await prisma.user.update({
-      where: {
-        clerkId: userId,
-      },
-      data: {
-        onBoarded: true,
-      },
-    });
-
-    return { success: true, data: updatedUser };
   } catch (error) {
     console.error("Error creating user", error);
   }

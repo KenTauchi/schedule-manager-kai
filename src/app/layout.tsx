@@ -44,7 +44,7 @@ export default async function RootLayout({
           <header className="flex justify-end items-center p-4 gap-4 h-16">
             <SignedOut>
               <SignInButton />
-              <SignUpButton mode="modal" unsafeMetadata={{ onBoardingComplete: false }} />
+              <SignUpButton mode="modal" unsafeMetadata={{ role: "PENDING" }} />
             </SignedOut>
             <SignedIn>
               <UserButton />

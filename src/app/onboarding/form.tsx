@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 import { Button } from "@/components/ui/button";
 import { useUpdateUserRole } from "@/hooks/user/useUpdateRole";
 import FormSelectInput from "@/components/Form/FormSelectInput";
-import { completeOnBoarding, completeOnBoardingForClerk } from "@/actions/user.actions";
+import { completeOnBoardingForClerk } from "@/actions/user.actions";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useUpdateUserOnboarding } from "@/hooks/user/useUpdateOnboarding";
@@ -38,26 +38,22 @@ export default function RoleUpdateForm({ id }: { id: string }) {
   const handleFormSubmit = async (data: z.infer<typeof formSchema>) => {
     const { role } = data;
 
-    console.log("request start");
-
     try {
-      const [resUserRole, resCompleteOnboarding, clerkResponse] = await Promise.all([
+      const [resUserRole, clerkResponse] = await Promise.all([
         updateUserRole({ id, role }),
-        completeOnBoarding(),
-        completeOnBoardingForClerk(),
+        completeOnBoardingForClerk(role),
       ]);
 
-      if (!resUserRole?.success || !resCompleteOnboarding?.success || !clerkResponse?.success) {
+      if (resUserRole?.success && clerkResponse?.success) {
+        router.push(role === "STUDENT" ? "student-dashboard" : "teacher-dashboard");
+        return NextResponse.json({ message: "Role updated successfully" }, { status: 200 });
+      }
+
+      if (!resUserRole?.success || !clerkResponse?.success) {
         return NextResponse.json(
           { error: "failed to update clerk public metadata" },
           { status: 500 }
         );
-      }
-
-      if (resUserRole.success && resCompleteOnboarding.success && clerkResponse.success) {
-        router.push(role === "TEACHER" ? "/teacher-dashboard" : "/student-dashboard");
-
-        return NextResponse.json({ message: "Role updated successfully" }, { status: 200 });
       }
     } catch (error) {
       throw new Error("Failed to update role");

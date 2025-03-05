@@ -3,7 +3,7 @@ export {};
 declare global {
   interface CustomJwtSessionClaims {
     metadata: {
-      onBoardingComplete?: boolean;
+      role?: "STUDENT" | "TEACHER" | "PENDING";
     };
   }
 }
