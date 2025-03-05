@@ -6,7 +6,6 @@ const isPublicRoute = createRouteMatcher(["/"]);
 const isStudentRoute = createRouteMatcher(["/student-dashboard"]);
 const isTeacherRoute = createRouteMatcher(["/teacher-dashboard"]);
 
-// Add this helper function
 function isApiRoute(req: NextRequest): boolean {
   return req.nextUrl.pathname.startsWith("/api/");
 }
@@ -24,16 +23,28 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
   const userRole = sessionClaims?.metadata?.role;
 
+  const redirectToDashboard = () =>
+    NextResponse.redirect(
+      new URL(userRole === "STUDENT" ? "/student-dashboard" : "/teacher-dashboard", req.url)
+    );
+
   // Allow API routes to bypass checks
   if (isApiRoute(req)) {
     return NextResponse.next();
   }
 
-  // If not logged in and trying to access private route, redirect to home
   if (!userId && !isPublicRoute(req)) {
-    return NextResponse.redirect("/");
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
+  //   Handling user on the home route
+  if (userId && isPublicRoute(req)) {
+    if (userRole !== "PENDING") {
+      return redirectToDashboard();
+    }
+  }
+
+  //   Handling when on the dashboard page
   if (isDashboardRoute(req)) {
     if (userRole === "STUDENT" && isTeacherRoute(req)) {
       return NextResponse.redirect(new URL("/student-dashboard", req.url));
@@ -45,13 +56,16 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     return NextResponse.next();
   }
 
-  if (userRole !== "PENDING" && isOnboardingRoute(req)) {
-    const userRole = sessionClaims?.metadata?.role;
+  //   Handling when on the onboard page
+  if (isOnboardingRoute(req)) {
+    if (userRole !== "PENDING") {
+      return NextResponse.redirect(
+        new URL(userRole === "STUDENT" ? "/student-dashboard" : "/teacher-dashboard", req.url)
+      );
+    }
 
-    if (userRole === "STUDENT") {
-      return NextResponse.redirect(new URL("/student-dashboard", req.url));
-    } else if (userRole === "TEACHER") {
-      return NextResponse.redirect(new URL("/teacher-dashboard", req.url));
+    if (userId && userRole === "PENDING") {
+      return NextResponse.next();
     }
   }
 

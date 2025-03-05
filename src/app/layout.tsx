@@ -8,6 +8,7 @@ import {
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
@@ -43,8 +44,16 @@ export default async function RootLayout({
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <header className="flex justify-end items-center p-4 gap-4 h-16">
             <SignedOut>
-              <SignInButton />
-              <SignUpButton mode="modal" unsafeMetadata={{ role: "PENDING" }} />
+              <SignInButton mode="modal">
+                <Button variant="ghost" className="cursor-pointer">
+                  Sign In
+                </Button>
+              </SignInButton>
+              <SignUpButton mode="modal" unsafeMetadata={{ role: "PENDING" }}>
+                <Button variant="ghost" className="cursor-pointer">
+                  Sign Up
+                </Button>
+              </SignUpButton>
             </SignedOut>
             <SignedIn>
               <UserButton />
