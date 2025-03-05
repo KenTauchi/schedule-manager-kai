@@ -2,6 +2,7 @@ import { type Metadata } from "next";
 import {
   ClerkProvider,
   SignInButton,
+  SignUp,
   SignUpButton,
   SignedIn,
   SignedOut,
@@ -35,8 +36,6 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await syncUser();
-  const headerList = await headers();
-  const pathname = headerList.get("x-invoke-path") || headerList.get("x-pathname") || "";
 
   return (
     <ClerkProvider>
@@ -45,7 +44,7 @@ export default async function RootLayout({
           <header className="flex justify-end items-center p-4 gap-4 h-16">
             <SignedOut>
               <SignInButton />
-              <SignUpButton />
+              <SignUpButton mode="modal" unsafeMetadata={{ onBoardingComplete: false }} />
             </SignedOut>
             <SignedIn>
               <UserButton />

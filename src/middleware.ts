@@ -4,28 +4,41 @@ import { NextRequest, NextResponse } from "next/server";
 const isOnboardingRoute = createRouteMatcher(["/onboarding"]);
 const isPublicRoute = createRouteMatcher(["/"]);
 
-export default clerkMiddleware();
-// export default clerkMiddleware(async (auth, req: NextRequest) => {
-//   const { userId, sessionClaims, redirectToSignIn } = await auth();
+// Add this helper function
+function isApiRoute(req: NextRequest): boolean {
+  return req.nextUrl.pathname.startsWith("/api/");
+}
 
-//   // For users visiting /onboarding, don't try to redirect
-//   if (userId && isOnboardingRoute(req)) {
-//     return NextResponse.next();
-//   }
+function isDashboardRoute(req: NextRequest): boolean {
+  return (
+    req.nextUrl.pathname.startsWith("/teacher-dashboard") ||
+    req.nextUrl.pathname.startsWith("/student-dashboard")
+  );
+}
 
-//   // If the user isn't signed in and the route is private, redirect to sign-in
-//   if (!userId && !isPublicRoute(req)) return redirectToSignIn({ returnBackUrl: req.url });
+// export default clerkMiddleware();
+export default clerkMiddleware(async (auth, req: NextRequest) => {
+  const { userId, sessionClaims } = await auth();
+  console.log("session claims", sessionClaims);
 
-//   // Catch users who do not have `onboardingComplete: true` in their publicMetadata
-//   // Redirect them to the /onboading route to complete onboarding
-//   //   if (userId && !sessionClaims?.metadata?.onboardingComplete) {
-//   //     const onboardingUrl = new URL("/onboarding", req.url);
-//   //     return NextResponse.redirect(onboardingUrl);
-//   //   }
+  // Allow API routes to bypass checks
+  if (isApiRoute(req)) {
+    return NextResponse.next();
+  }
 
-//   // If the user is logged in and the route is protected, let them view.
-//   if (userId && !isPublicRoute(req)) return NextResponse.next();
-// });
+  // If not logged in and trying to access private route, redirect to home
+  if (!userId && !isPublicRoute(req)) {
+    return NextResponse.redirect("/");
+  }
+
+  // If logged in but not onboarded, and not already on onboarding page
+  if (userId && !sessionClaims?.metadata?.onBoardingComplete && !isOnboardingRoute(req)) {
+    return NextResponse.redirect(new URL("/onboarding", req.url));
+  }
+
+  // Otherwise, allow access
+  return NextResponse.next();
+});
 
 export const config = {
   matcher: [

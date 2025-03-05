@@ -4,6 +4,25 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { date } from "zod";
 
+export async function completeOnBoardingForClerk() {
+  const { userId } = await auth();
+  if (!userId) return;
+
+  try {
+    const client = await clerkClient();
+
+    await client.users.updateUserMetadata(userId, {
+      unsafeMetadata: {
+        onBoardingComplete: true,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error creating user", error);
+  }
+}
+
 export async function completeOnBoarding() {
   const { userId } = await auth();
   if (!userId) return;

@@ -18,6 +18,16 @@ export function useUpdateUserRole() {
         },
         body: JSON.stringify({ id, role }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error("Error updating role:", response.status, errorData);
+        return {
+          success: false,
+          error: errorData?.error || `Error ${response.status}: ${response.statusText}`,
+        };
+      }
+
       const userData = await response.json();
       return { success: true, data: userData };
     } catch (error) {
