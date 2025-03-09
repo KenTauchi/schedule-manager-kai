@@ -15,6 +15,7 @@ import Link from "next/link";
 import { syncUser } from "@/actions/user.actions";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { NavbarTitle } from "@/components/Navbar/navbar-title";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,28 +37,37 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await syncUser();
+  await syncUser();
 
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          <header className="flex justify-end items-center p-4 gap-4 h-16">
-            <SignedOut>
-              <SignInButton mode="modal">
-                <Button variant="ghost" className="cursor-pointer">
-                  Sign In
-                </Button>
-              </SignInButton>
-              <SignUpButton mode="modal" unsafeMetadata={{ role: "PENDING" }}>
-                <Button variant="ghost" className="cursor-pointer">
-                  Sign Up
-                </Button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}>
+          <header className="flex justify-between items-center p-4 gap-4 h-16 bg-gray-800 text-white sticky top-0 z-10">
+            <NavbarTitle />
+            <div>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <Button
+                    variant="ghost"
+                    className="cursor-pointer hover:bg-gray-700 rounded-md p-2 transition"
+                  >
+                    Sign In
+                  </Button>
+                </SignInButton>
+                <SignUpButton mode="modal" unsafeMetadata={{ role: "PENDING" }}>
+                  <Button
+                    variant="ghost"
+                    className="cursor-pointer hover:bg-gray-700 rounded-md p-2 transition"
+                  >
+                    Sign Up
+                  </Button>
+                </SignUpButton>
+              </SignedOut>
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
+            </div>
           </header>
           {children}
         </body>

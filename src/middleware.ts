@@ -38,10 +38,8 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
   }
 
   //   Handling user on the home route
-  if (userId && isPublicRoute(req)) {
-    if (userRole !== "PENDING") {
-      return redirectToDashboard();
-    }
+  if (userId && isPublicRoute(req) && userRole !== "PENDING") {
+    return redirectToDashboard();
   }
 
   //   Handling when on the dashboard page

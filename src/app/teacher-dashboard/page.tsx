@@ -1,5 +1,5 @@
 import React from "react";
 
 export default function TeacherDashboard() {
-  return <div>Teacher Dashboard Page</div>;
+  return <div>Teacher Dashboard Page Content</div>;
 }
